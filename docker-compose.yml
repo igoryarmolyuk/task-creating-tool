@@ -1,0 +1,44 @@
+services:
+    nginx:
+        image: nginx
+        volumes:
+            - ./docker/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+            - ./docker/logs:/var/log/nginx
+            - .:/var/www/html
+        ports:
+            - "8010:80"
+        links:
+            - php
+
+    php:
+        build:
+            context: ./docker
+            dockerfile: php.df
+            args:
+                - DOCKER_PHP_UID=1000
+        environment:
+            - COMPOSER_MEMORY_LIMIT=-1
+            - XDEBUG_CONFIG=client_host=172.17.0.1 client_port=9000 remote_enable=1
+            - PHP_IDE_CONFIG=serverName=tasks
+        volumes:
+            - .:/var/www/html
+            - ./docker/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+        expose:
+            - "9000"
+        links:
+            - mysql
+
+    mysql:
+        image: 'mysql:8.4'
+        restart: unless-stopped
+        ports:
+            - '3361:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: qwerty
+            MYSQL_USER: dev
+            MYSQL_PASSWORD: qwerty
+            MYSQL_DATABASE: dev
+        volumes:
+            - './docker/data/mysql:/var/lib/mysql'
+            - './docker/data/dump:/tmp/dump'
+            - './docker/logs:/var/log/mysql'

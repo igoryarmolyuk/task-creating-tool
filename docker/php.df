@@ -1,0 +1,16 @@
+FROM php:8.2-fpm
+
+WORKDIR /var/www/html
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        unzip \
+    && docker-php-ext-install pdo_mysql mysqli \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV XDEBUG_VERSION=3.2.0
+RUN pecl install xdebug-${XDEBUG_VERSION} && docker-php-ext-enable xdebug
+
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
