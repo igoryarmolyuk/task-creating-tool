@@ -111,3 +111,8 @@ function pageTaskStatusesById() {
 
     return $statuses;
 }
+
+function migrate($sql) {
+    global $db_link;
+    $result = mysqli_query($db_link, $sql);
+}
