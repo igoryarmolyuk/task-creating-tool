@@ -65,7 +65,7 @@
 </head>
 
 <div class="task-preview">
-    <button class="edit-button" onclick="location.href='index.php?a=task_edit&id=<?php echo $id ?>'">*</button>
+    <button class="edit-button" onclick="location.href='/tasks/edit?id=<?= $id ?>'">*</button>
     <h2 class="title">
         <?php echo htmlspecialchars($name); ?>
     </h2>
