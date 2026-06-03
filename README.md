@@ -1,6 +1,6 @@
 # task-creating-tool
-To start working with the project you need to start Docker:
-docker compose up -d
+## To start working with the project you need to start Docker:
+```docker compose up -d```
 Then you have to run file called migrations.php with this command:
 docker compose exec php php migrations.php
 NOTE: since the program is in early development for migrations.php to work you'll have to drop your all tables and then start migrations.php
