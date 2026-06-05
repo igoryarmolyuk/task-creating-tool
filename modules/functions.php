@@ -222,3 +222,14 @@ function migrate($sql) {
     global $db_link;
     $result = mysqli_query($db_link, $sql);
 }
+
+function user($field = null) {
+    global $db_link, $user;
+
+    if (empty($user)) {
+        $user_id = $_SESSION['user_id'];
+        $result = mysqli_query($db_link, "SELECT * FROM users WHERE id = '$user_id' LIMIT 1");
+        $user = mysqli_fetch_assoc($result);
+    }
+    return $field ? $user[$field] : $user;
+}

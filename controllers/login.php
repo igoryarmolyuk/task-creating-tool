@@ -30,20 +30,20 @@ function pageLoginController() {
 
         if (empty($errors)) {
             $username = mysqli_real_escape_string($db_link, $username);
-            $password = md5(mysqli_real_escape_string($db_link, $password));
+            $hashed_password = md5(mysqli_real_escape_string($db_link, $password));
 
             $result = mysqli_query(
                 $db_link,
                 "SELECT * FROM users WHERE username = '$username' LIMIT 1");
 
-            if (($user = mysqli_fetch_assoc($result)) and hash_equals($user['password'], $password)) {
+            if (($user = mysqli_fetch_assoc($result)) and hash_equals($user['password'], $hashed_password)) {
                 $_SESSION['user_id'] = $user['id'];
 
                 header('Location: /');
                 exit;
             }
 
-            $errors['login'] = 'Invalid username, email, or password.';
+            echo $errors['login'] = 'Invalid username, email, or password.';
         }
     }
 
