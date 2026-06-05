@@ -21,9 +21,32 @@ function saveTask($name, $description, $status_id, $id = null) {
     return mysqli_insert_id($db_link);
 }
 
+function sendRegistration($first_name, $last_name, $name, $email, $password) {
+    global $db_link;
+
+    $first_name = mysqli_real_escape_string($db_link, $first_name);
+    $last_name = mysqli_real_escape_string($db_link, $last_name);
+    $username = mysqli_real_escape_string($db_link, $name);
+    $email = mysqli_real_escape_string($db_link, $email);
+    $password = md5(mysqli_real_escape_string($db_link, $password));
+    $created_at = date('Y-m-d H:i:s');
+    $activity = 0;
+
+    // Added 'activity' to the column list so it matches the 7 values
+    $query = "INSERT INTO users (first_name, last_name, username, email, password, created_at, activity) 
+              VALUES ('$first_name', '$last_name', '$username', '$email', '$password', '$created_at', '$activity')";
+
+    $result = mysqli_query($db_link, $query);
+    if (!$result) {
+        return false;
+    }
+
+    return mysqli_insert_id($db_link);
+}
+
 function deleteTask($id) {
     global $db_link;
-    return mysqli_query($db_link, "DELETE FROM tasks WHERE id = $id");
+    return mysqli_query($db_link, "DELETE FROM tasks WHERE id = '$id'");
 }
 
 function getTaskById($id) {
@@ -50,27 +73,110 @@ function render($template, $data = []) {
 }
 
 function route() {
+    global $routes;
     $currentUri = $_SERVER['REQUEST_URI'];
     $urlParts = parse_url($currentUri);
     $path = trim($urlParts['path'], '/') ?: 'tasks';
-    $path_tmp = explode('/', $path);
-    $action = end($path_tmp) ?: 'tasks';
     $ROOT_DIR = dirname(__DIR__);
-    $action = basename(preg_replace('/[-_]/', ' ', $action));
-    $actionName = 'page' . str_replace(' ', '', ucwords($action)) . 'Controller';
-    $controller_path = $ROOT_DIR . '/controllers/' . $path . '.php';
+
+    if (!isset($routes[$path])) {
+        $path = '404';
+    } else {
+        if (!empty($routes[$path]['middlewares'])) {
+            foreach ($routes[$path]['middlewares'] as $middleware) {
+                callMiddleware($middleware);
+            }
+        }
+    }
+
     $template = $ROOT_DIR . '/templates/' . $path . '.htm';
 
-    if (!file_exists($controller_path)) {
-        $controller_path = $ROOT_DIR . '/controllers/404.php';
-        $actionName = 'page404Controller';
-    }
-    include $controller_path;
+    if (empty($routes[$path]['controller'])) {
+        $path_tmp = explode('/', $path);
+        $action = end($path_tmp) ?: 'tasks';
+        $action = basename(preg_replace('/[-_]/', ' ', $action));
+        $actionName = 'page' . str_replace(' ', '', ucwords($action)) . 'Controller';
+        $controller_path = $ROOT_DIR . '/controllers/' . $path . '.php';
 
-    $result = $actionName();
+        if (!file_exists($controller_path)) {
+            $controller_path = $ROOT_DIR . '/controllers/404.php';
+            $actionName = 'page404Controller';
+        }
+        include $controller_path;
+
+        $result = $actionName();
+    } else {
+        $result = $routes[$path]['controller']();
+    }
+
     $content = render($template, $result);
 
-    echo render($ROOT_DIR . '/templates/index.htm', ['content' => $content]);
+    $commonTemplate =  $routes[$path]['commonTemplate'] ?? '/templates/index.htm';
+
+    echo render($ROOT_DIR . $commonTemplate, ['content' => $content]);
+}
+
+function addRoute($path, callable $controller = null, $template = null, $commonTemplate = null, $middlewares = []) {
+    global $routes;
+    $routes[$path] = [
+        'controller' => $controller,
+        'template' => $template,
+        'commonTemplate' => $commonTemplate,
+        'middlewares' => $middlewares
+    ];
+}
+
+function addValidator($name, callable $validator) {
+    global $validators;
+    $validators[$name] = $validator;
+}
+
+function validate($value, array $rules) {
+    global $validators;
+
+    // If nullable and empty, validation passes immediately
+    if (
+        isset($rules['nullable']) &&
+        $rules['nullable'] &&
+        ($value === null || $value === '')
+    ) {
+        return true;
+    }
+
+    foreach ($rules as $rule => $param) {
+        if (!isset($validators[$rule])) {
+            return false;
+        }
+
+        $validator = $validators[$rule];
+
+        if ($param === true) {
+            if (!$validator($value)) {
+                return false;
+            }
+        } else {
+            if (!$validator($value, $param)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+function addMiddleware($middleWareName, callable $handler) {
+    global $middleWares;
+    $middleWares[$middleWareName] = $handler;
+}
+
+function callMiddleware($name) {
+    global $middleWares;
+
+    if (isset($middleWares[$name])) {
+        return $middleWares[$name]();
+    }
+
+    return null;
 }
 
 function pageNews(): array {

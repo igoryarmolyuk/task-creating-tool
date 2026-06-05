@@ -1,0 +1,20 @@
+<form method="post" class="task-create">
+    <h1>Вход в аккаунт</h1>
+    <div class="description">
+        <label>Имя пользователя</label><br>
+        <label>
+            <input type="text" name="username"><br>
+            <label class="error"><?=$errors['username'] ?? ''; ?></label>
+        </label>
+        <br>
+        <label>Пароль</label><br>
+        <label>
+            <input type="password" name="password"><br>
+            <label class="error"><?=$errors['password'] ?? ''; ?></label>
+        </label><br>
+    </div>
+
+    <br>
+
+    <button type="submit" class="home-button">Сохранить</button>
+</form>

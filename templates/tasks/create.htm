@@ -45,12 +45,13 @@
     <div class="description">
         <label>Название задачи</label><br>
         <label>
-            <input type="text" name="name">
+            <input type="text" name="name" value="<?=$data['name'] ?? ''; ?>"><br>
+            <label class="error"><?=$errors['name'] ?? ''; ?></label>
         </label>
         <br>
     <label>Описание</label><br>
         <label>
-            <textarea name="description"></textarea>
+            <textarea name="description"><?=$data['description'] ?? ''; ?></textarea>
         </label><br>
         <label>Статус</label><br>
         <label>

@@ -7,8 +7,8 @@ migrate("create table users
     last_name  varchar(255) not null,
     username   varchar(255) not null,
     email      varchar(255) not null,
-    password   int          not null,
-    created_at int          not null,
+    password   varchar(255)          not null,
+    created_at datetime          not null,
     activity   tinyint(1)   not null,
     constraint users_pk
         unique (username)
