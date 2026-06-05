@@ -1,5 +1,6 @@
 <?php
-migrate("create table users
+migrate("
+create table users
 (
     id         int auto_increment
         primary key,
