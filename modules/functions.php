@@ -1,10 +1,11 @@
 <?php
-function saveTask($name, $description, $status_id, $id = null) {
+function saveTask($name, $description, $status_id, $project_id, $id = null) {
     global $db_link;
 
     $name = mysqli_real_escape_string($db_link, $name);
     $description = mysqli_real_escape_string($db_link, $description);
     $status_id = mysqli_real_escape_string($db_link, $status_id);
+    $project_id = mysqli_real_escape_string($db_link, $project_id);
 
     if ($id !== null) {
         $id = (int)$id;
@@ -13,12 +14,36 @@ function saveTask($name, $description, $status_id, $id = null) {
     }
 
     $created_at = date('Y-m-d H:i:s');
-    $result = mysqli_query($db_link, "INSERT INTO tasks (name, description, created_at, status_id) VALUES ('$name', '$description', '$created_at', '$status_id')");
+    $result = mysqli_query($db_link, "INSERT INTO tasks (name, description, created_at, status_id, project_id) VALUES ('$name', '$description', '$created_at', '$status_id', '$project_id')");
     if (!$result) {
         return false;
     }
 
     return mysqli_insert_id($db_link);
+}
+
+function saveProject($name, $id = null) {
+    global $db_link;
+
+    $name = mysqli_real_escape_string($db_link, $name);
+
+    if ($id !== null) {
+        $id = (int)$id;
+
+        return mysqli_query($db_link, "UPDATE projects SET name = '$name' WHERE id = '$id'");
+    }
+
+    $created_at = date('Y-m-d H:i:s');
+    $result = mysqli_query($db_link, "INSERT INTO projects (name) VALUES ('$name')");
+    if (!$result) {
+        return false;
+    }
+
+    $project_id = mysqli_insert_id($db_link);
+    $user_id = user('id');
+    $result = mysqli_query($db_link, "INSERT INTO project_users (user_id, project_id) VALUES ($user_id, $project_id)");
+
+    return $project_id;
 }
 
 function sendRegistration($first_name, $last_name, $name, $email, $password) {
@@ -49,12 +74,27 @@ function deleteTask($id) {
     return mysqli_query($db_link, "DELETE FROM tasks WHERE id = '$id'");
 }
 
+function deleteProject($id)
+{
+    global $db_link;
+    mysqli_query($db_link, "DELETE FROM project_users WHERE project_id = '$id'");
+    mysqli_query($db_link, "DELETE FROM tasks WHERE project_id = '$id'");
+    return mysqli_query($db_link, "DELETE FROM projects WHERE id = '$id'");
+}
+
 function getTaskById($id) {
     global $db_link;
     $result = mysqli_query($db_link, "SELECT * FROM tasks WHERE id='$id'");
 
     return mysqli_fetch_assoc($result);
 }
+
+function getTaskCount($project_id) {
+    global $db_link;
+    $result = mysqli_query($db_link, "SELECT COUNT(*) as count FROM tasks WHERE project_id='$project_id'");
+    return mysqli_fetch_assoc($result);
+}
+
 function storeGetJsonTask($id) {
     global $db_link;
 
@@ -99,12 +139,14 @@ function route() {
         $controller_path = $ROOT_DIR . '/controllers/' . $path . '.php';
 
         if (!file_exists($controller_path)) {
-            $controller_path = $ROOT_DIR . '/controllers/404.php';
-            $actionName = 'page404Controller';
+            $path = '404';
+            $template = $ROOT_DIR . '/templates/' . $path . '.htm';
+            $result = $routes[$path]['controller']();
+        } else {
+            include $controller_path;
+            $result = $actionName();
         }
-        include $controller_path;
 
-        $result = $actionName();
     } else {
         $result = $routes[$path]['controller']();
     }
@@ -179,19 +221,35 @@ function callMiddleware($name) {
     return null;
 }
 
-function pageNews(): array {
-    return [];
-}
-
-function pageNewsCreate() {
-    return [];
-}
-
-function getTasks($orderField = 'created_at', $orderType = 'desc') {
+function getProjects($orderField = 'created_at', $orderType = 'desc') {
     global $db_link;
     $items = [];
 
-    $result = mysqli_query($db_link, "SELECT * FROM tasks order by $orderField $orderType");
+    $user_id = user('id');
+    $result = mysqli_query($db_link, "SELECT * FROM projects, project_users where project_users.project_id = projects.id and user_id=$user_id order by $orderField $orderType");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $items[] = $row;
+    }
+    return $items;
+}
+
+function getProjectById($id) {
+    global $db_link;
+    $result = mysqli_query($db_link, "SELECT * FROM projects WHERE id='$id'");
+
+    return mysqli_fetch_assoc($result);
+}
+
+function getTasks($orderField = 'created_at', $orderType = 'desc', $project_id = null) {
+    global $db_link;
+    $items = [];
+
+    $project_sql = $project_id ? "tasks.project_id = $project_id AND " : "";
+
+    $user_id = user('id');
+    $result = mysqli_query($db_link, "SELECT tasks.*, projects.name as project_name FROM tasks, projects, project_users where tasks.project_id = projects.id and
+                                                                                        projects.id = project_users.project_id and $project_sql
+                                                                                        project_users.user_id = $user_id order by $orderField $orderType");
     while ($row = mysqli_fetch_assoc($result)) {
        $items[] = $row;
     }
@@ -228,7 +286,7 @@ function user($field = null) {
 
     if (empty($user)) {
         $user_id = $_SESSION['user_id'];
-        $result = mysqli_query($db_link, "SELECT * FROM users WHERE id = '$user_id' LIMIT 1");
+        $result = mysqli_query($db_link, "SELECT * FROM users WHERE id = $user_id LIMIT 1");
         $user = mysqli_fetch_assoc($result);
     }
     return $field ? $user[$field] : $user;

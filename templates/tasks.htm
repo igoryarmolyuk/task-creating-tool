@@ -1,22 +1,3 @@
-<style>
-    .large-text {
-        display: inline-block;
-        transform: scaleX(1.5) scaleY(1.5);
-        transform-origin: left;
-        border: none;
-        --bs-btn-hover-bg: lightgray;
-        --bs-btn-active-bg: darkgray;
-    }
-    .horizontally-large-text {
-        display: inline-block;
-        transform: scaleX(1.5);
-        transform-origin: left;
-        border: none;
-        --bs-btn-hover-bg: lightgray;
-        --bs-btn-active-bg: darkgray;
-    }
-</style>
-
 <h1 style="display: inline">Tasks</h1>
 <button onclick="location.href='tasks/create'">+</button>
 <head>
@@ -27,15 +8,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.13.1/font/bootstrap-icons.min.css">
 </head>
 <form method="get" id="sortForm" style="display: inline">
-    <select id="sorting" name="orderParam">
+    <select id="taskSorting" name="taskOrderParam">
         <optgroup label="Created date" >
-            <option value="created_at:desc" <?= ($orderParam == 'created_at:desc' ? 'selected' : '') ?>>Default (from newest to oldest)</option>
-            <option value="created_at:asc" <?= ($orderParam == 'created_at:asc' ? 'selected' : '') ?>>From oldest to newest</option>
+            <option value="created_at:desc" <?= ($taskOrderParam == 'created_at:desc' ? 'selected' : '') ?>>Default (from newest to oldest)</option>
+            <option value="created_at:asc" <?= ($taskOrderParam == 'created_at:asc' ? 'selected' : '') ?>>From oldest to newest</option>
         </optgroup>
         <optgroup label="Alphabetic order">
-            <option value="name:asc" <?= ($orderParam == 'name:asc' ? 'selected' : '') ?>>From A to Z</option>
-            <option value="name:desc" <?= ($orderParam == 'name:desc' ? 'selected' : '') ?>>From Z to A</option>
+            <option value="name:asc" <?= ($taskOrderParam == 'name:asc' ? 'selected' : '') ?>>From A to Z</option>
+            <option value="name:desc" <?= ($taskOrderParam == 'name:desc' ? 'selected' : '') ?>>From Z to A</option>
         </optgroup>
+    </select>
+    <select id="projectSorting" name="project_id">
+        <option value="">All projects</option>
+        <? foreach ($projects as $project): ?>
+            <option value="<?= $project['id'] ?>" <?= ($project['id'] == $project_id ? 'selected' : '') ?> >
+                <?= $project['name'] ?>
+            </option>
+        <? endforeach; ?>
     </select>
 </form>
 
@@ -43,6 +32,7 @@
     <thead>
     <tr>
         <th>ID</th>
+        <th>Project</th>
         <th>Status</th>
         <th>Task Name</th>
         <th>Description</th>
@@ -55,6 +45,9 @@
     <tr>
         <td>
             <?= htmlspecialchars($item['id']); ?>
+        </td>
+        <td>
+            <?= $item['project_name'] ?>
         </td>
         <td>
             <?= $statuses[$item['status_id']] ?>
@@ -80,9 +73,12 @@
 </table>
 
 <script>
-    document.getElementById('sorting').addEventListener('change', function() {
+    document.getElementById('taskSorting').addEventListener('change', function() {
         document.getElementById('sortForm').submit();
     });
+    document.getElementById('projectSorting').addEventListener('change', function() {
+        document.getElementById('sortForm').submit();
+    })
     function Deleteconfirmation(id) {
         if (confirm("test")) {
             location.href='/tasks/delete?id=' + id

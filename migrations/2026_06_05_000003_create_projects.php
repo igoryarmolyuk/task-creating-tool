@@ -4,5 +4,6 @@ create table projects
 (
     id   int auto_increment
         primary key,
-    name varchar(255) not null
+    name varchar(255) not null,
+    created_at  timestamp default CURRENT_TIMESTAMP null
 );");

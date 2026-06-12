@@ -8,7 +8,6 @@ function pageRegistrationController() {
         $username   = $_POST["username"] ?? '';
         $email      = $_POST["email"] ?? '';
         $password   = $_POST["password"] ?? '';
-        $created_at = date("Y-m-d H:i:s");
 
         $errors = [];
 

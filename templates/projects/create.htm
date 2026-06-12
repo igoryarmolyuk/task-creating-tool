@@ -7,7 +7,7 @@
         border-radius: 10px;
         background: lightgrey;
     }
-    .description {
+    .tasks {
         padding: 14px 20px 14px 20px;
         border: darkgray 3px solid;
         border-radius: 10px;
@@ -41,40 +41,17 @@
 </head>
 
 <form method="post" class="task-create">
-    <h1>Добавить задачу</h1>
-    <div class="description">
-        <label>Название задачи</label><br>
+    <h1>Добавить проект</h1>
+    <div class="tasks">
+        <label>Название проекта</label><br>
         <label>
             <input type="text" name="name" value="<?=$data['name'] ?? ''; ?>"><br>
             <label class="error"><?=$errors['name'] ?? ''; ?></label>
         </label>
         <br>
-        <label>Описание</label><br>
-        <label>
-            <textarea name="description"><?=$data['description'] ?? ''; ?></textarea>
-        </label><br>
-        <label>Проект</label><br>
-        <label>
-            <select name="project_id">
-                <?php foreach ($projects as $project): ?>
-                <option value="<?= $project['id'] ?>">
-                    <?= $project["name"] ?>
-                </option>
-                <?php endforeach; ?>
-            </select>        </label><br>
-        <label>Статус</label><br>
-        <label>
-            <select name="status_id">
-                <?php foreach ($statuses as $status): ?>
-                    <option value="<?= $status['id'] ?>">
-                        <?= $status["name"] ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </label>
     </div>
 
-  <br>
+    <br>
 
-  <button type="submit" class="home-button">Сохранить</button>
+    <button onclick="location.href='/projects'" class="home-button">Сохранить</button>
 </form>
