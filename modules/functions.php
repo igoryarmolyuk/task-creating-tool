@@ -240,6 +240,16 @@ function getProjectById($id) {
     return mysqli_fetch_assoc($result);
 }
 
+function getTasksFromProject($project_id) {
+    global $db_link;
+    $items = [];
+    $result = mysqli_query($db_link, "SELECT * FROM tasks WHERE project_id='$project_id'");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $items[] = $row;
+    }
+    return $items;
+}
+
 function getTasks($orderField = 'created_at', $orderType = 'desc', $project_id = null) {
     global $db_link;
     $items = [];
