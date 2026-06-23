@@ -14,6 +14,7 @@ function pagePreviewController() {
     }
 
     $taskCount = getTaskCount($id);
+    $userCount = getUserCount($id);
 
-    return ['project' => $projectData, 'taskCount' => $taskCount['count']];
+    return ['project' => $projectData, 'taskCount' => $taskCount['count'], 'userCount' => $userCount['count']];
 }

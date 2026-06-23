@@ -13,6 +13,9 @@ addRoute('projects/create', null, null, null, ['auth']);
 addRoute('projects/preview', null, null, null, ['auth']);
 addRoute('projects/delete', null, null, null, ['auth']);
 addRoute('projects/tasks_in_project', null, null, null, ['auth']);
+addRoute('projects/users_in_project', null, null, null, ['auth']);
+addRoute('projects/add_a_user', null, null, null, ['auth']);
+addRoute('projects/delete_a_user', null, null, null, ['auth']);
 
 addRoute('tasks', null, null, null, ['auth']);
 addRoute('tasks/preview', null, null, null, ['auth']);

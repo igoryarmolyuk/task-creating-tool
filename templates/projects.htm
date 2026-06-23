@@ -33,10 +33,10 @@
     <?php foreach ($items as $item): ?>
     <tr>
         <td>
-            <?= htmlspecialchars($item['id']); ?>
+            <?= htmlspecialchars($item['project_id']); ?>
         </td>
         <td>
-            <a href="/projects/preview?id=<?= $item['id']; ?>">
+            <a href="/projects/preview?id=<?= $item['project_id']; ?>">
                 <?= htmlspecialchars($item['name']); ?>
             </a>
         </td>
